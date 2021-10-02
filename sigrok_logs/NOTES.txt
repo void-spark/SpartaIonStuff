@@ -1,0 +1,4 @@
+broken: Messing with a different battery in bike, but seems it's set up for the new displays
+broken2_blinks: Messing with a different battery in bike, but seems it's set up for the new displays. The lights were blinking (while charging), I think..
+connected_sleep_press_once: My original battery in the bike, just stood still. Pressed the button once
+off_connect_display_set1_set2_set3_set0: My original battery in the bike, just stood still. Pressed the button 4 times

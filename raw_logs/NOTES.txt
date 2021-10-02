@@ -1,0 +1,3 @@
+forum0-5: Einschalten warten bis Schraubenschlüssel weg dann Power und treten dann abschalten
+LOG00006/7/8: Messing about with just battery + display
+LOG00009: Medium size bike ride outside.
