@@ -74,6 +74,16 @@ Not sure what the incrementing numbers are for, but as long as you increment the
 Not sure what it means.
 - `26` Display update, 9 byte payload which sets icons/numbers on the display. Reply always empty.
 - `27` Display update (default). Same as `26`, but (I think) it sets what to display when the regular updates stop.
+- `30`: Motor command with no payload in request/response.  
+Not sure what this does, might be 'on'.
+- `31`: Motor command with a single byte payload (00), and no response payload.  
+Not sure what this does, might be 'off'.
+- `32`: Motor command with no payload in request/response.  
+Not sure what this does, might be 'active'.
+- `33`: Motor command with no payload in request/response.  
+Not sure what this does, might be 'inactive'.
+- `34`: Motor command with a single byte payload (01,02,03), and no response payload.  
+Not sure what this does, might be 'power level'.
 
 # Messages to bms
 
