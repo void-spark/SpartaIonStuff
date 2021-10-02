@@ -63,10 +63,10 @@ Let's have some examples, we'll ignore the first (0x10) and last (crc) byte for 
 # Commands
 - `08` Get data, requests specific data from the target. The request and response payload are specially structured.
 - `09` Put data, sends data to the target. Request payload is specially structured, response is always a single byte (00, but may hold an error code?)
-- `11` Battery command with no payload in request/response.  
-Not sure what this does
-- `12` Battery command with a single byte payload (00 or 01), and no response payload.  
-Not sure what this does
+- `11` Battery command with no payload in request/response. Sent from motor to battery just after telling the motor to go off.  
+Could be a confirmation?
+- `12` Battery command with a single byte payload (00 or 01), and no response payload. 01 Sent from motor to battery just after telling the motor to turn on assist, 00 just after off.  
+Could be a confirmation?
 - `20` Get (display) serial number. Payload is empty, reply payload holds the serial number.
 - `22` Display unit button check. 1 byte payload with a incrementing number (00-0F). Reply has two bytes, with the first being the button status, and the second another incrementing number (00-FF)  
 Not sure what the incrementing numbers are for, but as long as you increment them for each message everything seems to work.
