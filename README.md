@@ -61,7 +61,13 @@ Let's have some examples, we'll ignore the first (0x10) and last (crc) byte for 
 - 'C' Display 
 
 # Commands
-
+- `20` Get (display) serial number. Payload is empty, reply payload holds the serial number.
+- `22` Display unit button check. 1 byte payload with a incrementing number (00-0F). Reply has two bytes, with the first being the button status, and the second another incrementing number (00-FF)  
+Not sure what the incrementing numbers are for, but as long as you increment them for each message everything seems to work.
+- `25` Always sent to display when coming out of idle. Payload is always `0408`. Reply always empty.  
+Not sure what it means.
+- `26` Display update, 9 byte payload which sets icons/numbers on the display. Reply always empty.
+- `27` Display update (default). Same as `26`, but (I think) it sets what to display when the regular updates stop.
 
 # Messages to bms
 
