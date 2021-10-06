@@ -113,7 +113,19 @@ Full examples:
 - `[10-c122-250408-84]` - Request from BMS to display, payload '0408'.
 - `[10-22c0-25-29]` - Response from display to BMS.
 
+## `22` Poll buttons
+This message is sent by the BMS to the display.
+It is usually sent once every 100ms.
+The first request message after the system waking up always has '80' as payload.
+After that request messages cycle through values 0x00-0x0f consistently.
+Respone messages are two bytes. The first is '00','01','02' or '03', depending on whether the top, bottom, or both buttons are pressed. The second byte seems to cycle through 0x00-0xff. But the pattern seems different among systems/displays. One shows an increment of 1 most of the time, sometimes skipping or repeating a value. Another shows much bigger more irregular steps, in the 20-50 range (at a glance).
 
+Full examples:
+
+- `[10-c121-2280-5f]` - First button poll message, payload '80'
+- `[10-22c2-220001-0a]` - Button poll response, no button pressed, payload '0001'
+- `[10-c121-220b-c9]` - Later button poll message, payload '0b'
+- `[10-22c2-2202de-db]` - Button poll response, bottom button pressed, payload '02de'
 
 # Messages to bms
 
