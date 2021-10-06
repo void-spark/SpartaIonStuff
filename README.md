@@ -80,10 +80,44 @@ Not sure what it means.
 - `33`: Motor command with no payload in request/response: Disable assist
 - `34`: Motor command with a single byte payload (01,02,03), and no response payload: Set assist level
 
+# Messages to display
+
+The display only reacts to messages sent to it, except for when it sends a '0' byte to wake up the system.
+Almost all messages sent to the display are sent by the BMS.
+The only exception is the message the motor sends to get the serial number of the display.
+
+
+## `22` Get serial
+This message is sent by the Motor to the display.
+Sent some time after waking up the system usually.
+The request is empty. The display responds with it's serial number, as 16 digits.
+If the sticker has 8 numbers, the first 4 are at the beginning of the serial, and the last are at the end of the serial.
+If the sticker has 9 numbers, the first 5 are at the beginning of the serial, and the last are at the end of the serial.
+
+Full examples:
+- `[10-c100-20-03]` - Request from Motor to BMS.
+- `[10-02C8-200506000000002306-0A]` - Response for sticker '0506 2306', payload '0506000000002306'
+- `[10-02c8-201641100000000266-42]` - Response for sticker '164110266', payload '1641100000000266'
+
+## `25` Mystery display message
+This message is sent by the BMS to the display.
+It is sent once shortly after the system wakes up.
+The request payload is always '0408', and the response has no payload.
+It's not usually the very first message sent to the display.
+Usually there have already been display button polling messages (22) and default display messages (26).
+It does always seem to be sent before any set display message is sent (27)
+Testing shows it's not actually required for the display to work.
+Maybe it sets the timeout after a display update command, before the display reverts to the default screen?
+
+Full examples:
+- `[10-c122-250408-84]` - Request from BMS to display, payload '0408'.
+- `[10-22c0-25-29]` - Response from display to BMS.
+
+
+
 # Messages to bms
 
 
 # Messages to motor controller
 
 
-# Messages to display
