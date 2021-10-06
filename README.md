@@ -87,7 +87,7 @@ Almost all messages sent to the display are sent by the BMS.
 The only exception is the message the motor sends to get the serial number of the display.
 
 
-## `22` Get serial
+## `20` Get serial
 This message is sent by the Motor to the display.
 Sent some time after waking up the system usually.
 The request is empty. The display responds with it's serial number, as 16 digits.
