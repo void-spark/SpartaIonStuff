@@ -1,3 +1,13 @@
 forum0-5: Einschalten warten bis Schraubenschlüssel weg dann Power und treten dann abschalten
 LOG00006/7/8: Messing about with just battery + display
 LOG00009: Medium size bike ride outside.
+LOG00010: Larger bike ride, lots of wind.
+forumb1: Ik heb een logje gemaakt. Motor en display (type CU2V2) horen bij elkaar, de accu is van een andere fiets. De display zal niet de eerste display zijn voor deze motor, maar is waarschijnlijk later aangemeld. Bij het aanzetten komt even de totaal-km stand op het display, waarna enkele seconden het “sleutel-symbooltje” gaat knipperen en “------" verschijnt op het km-display. Wanneer het sleutel-symbool uit gaat, staat de display op trip-stand (0km in dit geval).
+    Ik heb 4 keer op de “mode” knop gedrukt: aan (=1e ondersteuning), 2e, 3e en uit/stand-by.
+    Voordat ik naar de 2e ondersteuning ging, heb ik gewacht totdat het sleutel-symbool verdwenen was.
+    Serienummers:
+        display: 161910744
+        motor: 05250316 (05 is waarschijnlijk bouwjaar)
+        accu: G10630000152 (G1 is “generatie”, 06 waarschijnlijk bouwjaar)
+    Km stand: 16089
+    tripstand: 0
