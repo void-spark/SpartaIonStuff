@@ -88,6 +88,13 @@ The display only reacts to messages sent to it, except for when it sends a '0' b
 Almost all messages sent to the display are sent by the BMS.
 The only exception is the message the motor sends to get the serial number of the display.
 
+## `04` Mystery message 04
+This message is sent by the BMS to the display and has no payload in request or response.
+This message isn't seen often, and seems to only be sent when the motor has been turned off.
+Maybe some ping, or keepalive?
+Full examples:
+- `[10-c120-04-d3]` - Request from BMS to display.
+- `[10-22c0-04-61]` - Response from display to BMG.
 
 ## `20` Get serial
 This message is sent by the Motor to the display.
@@ -97,7 +104,7 @@ If the sticker has 8 numbers, the first 4 are at the beginning of the serial, an
 If the sticker has 9 numbers, the first 5 are at the beginning of the serial, and the last are at the end of the serial.
 
 Full examples:
-- `[10-c100-20-03]` - Request from Motor to BMS.
+- `[10-c100-20-03]` - Request from Motor to display.
 - `[10-02C8-200506000000002306-0A]` - Response for sticker '0506 2306', payload '0506000000002306'
 - `[10-02c8-201641100000000266-42]` - Response for sticker '164110266', payload '1641100000000266'
 
