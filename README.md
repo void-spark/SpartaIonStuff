@@ -88,7 +88,7 @@ The display only reacts to messages sent to it, except for when it sends a '0' b
 Almost all messages sent to the display are sent by the BMS.
 The only exception is the message the motor sends to get the serial number of the display.
 
-## `04` Mystery message 04
+## `04` Mystery display message
 This message is sent by the BMS to the display and has no payload in request or response.
 This message isn't seen often, and seems to only be sent when the motor has been turned off.
 Maybe some ping, or keepalive?
@@ -121,6 +121,63 @@ Maybe it sets the timeout after a display update command, before the display rev
 Full examples:
 - `[10-c122-250408-84]` - Request from BMS to display, payload '0408'.
 - `[10-22c0-25-29]` - Response from display to BMS.
+
+## `26` Update display
+This message is sent by the BMS to the display.
+The payload is always 9 bytes, which contains the different segments and values to show on the display.
+
+For several segments there's a 2 bit value, which encodes blinking:
+- `00`: Off
+- `01`: Fast blink
+- `10`: Slow blink
+- `11`: No blink (on)
+
+For the two numeric display the hex values of each nibble are used as the number for the digit,
+additionally the remaining values are  mapped as follows:
+- `a`: '-' (dash)
+- `b`: 'b'
+- `c`: ' ' (space)
+- `d`: 'd'
+- `e`: 'e'
+- `f`: 'f'
+
+The bytes are used as follows
+- byte 0: Power level (2 bits per option to indicate blinking)
+  - bit 0-1 (0x03): Off
+  - bit 2-3 (0x0c): Eco
+  - bit 4-5 (0x30): Normal
+  - bit 6-7 (0xc0): Power
+- byte 1: Segments 1 (2 bits per option to indicate blinking)
+  - bit 0-1 (0x03): Wrench
+  - bit 2-3 (0x0c): Total
+  - bit 4-5 (0x30): Trip
+  - bit 6-7 (0xc0): Light (Also turns on the backlight, if not set to blinking)
+- byte 2: Segments 2 (2 bits per option to indicate blinking)
+  - bit 0-1 (0x03): Bars (last bar blinks if blinking is set)
+  - bit 4-5 (0x30): Comma
+  - bit 6-7 (0xc0): Km
+- byte 3: Battery left. Numeric value 0-100 as percentage of the amount of bars to show.
+- byte 4-5: 3 digits of km/h display. Leftmost nibble seems unused and usually is set to 'c'.
+- byte 6-8: 5 digits of km display. Leftmost nibble seems unused and usually is set to 'f'.
+
+Full examples:
+- `[10-c129-260c0cc361c000f09104-65]` - Request from BMS to display, 'eco', speed '00.0', total km '09104', bars 97%.
+- `[10-c129-260c30c361c000fcccc0-c9]` - Request from BMS to display, 'eco', speed '00.0', trip km '    0', bars 97%.
+- `[10-22c0-26-d9]` - Response from display to BMS.
+
+## `27` Set default display
+This message is sent by the BMS to the display.
+The payload is always 9 bytes, which contains the different segments and values to show on the display.
+
+The content is pretty much identical to a `26` message, but this seems to set a persistent default.
+The only difference with a `26` message is the left two bytes of the 'unused' left nibble for each decimal value to show is `00` instead of `11`.
+So:
+- byte 4-5: 3 digits of km/h display. Leftmost nibble seems unused and usually is set to '0'.
+- byte 6-8: 5 digits of km display. Leftmost nibble seems unused and usually is set to '3'.
+
+Full examples:
+- `[10-c129-270330c00000003cccc0-d4]` - Request from BMS to display, 'off', speed '00.0', trip km '    0', bars 0%.
+- `[10-22c0-27-48]` - Response from display to BMS.
 
 ## `22` Poll buttons
 This message is sent by the BMS to the display.
