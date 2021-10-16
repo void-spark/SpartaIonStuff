@@ -12,3 +12,5 @@ forumb1: Ik heb een logje gemaakt. Motor en display (type CU2V2) horen bij elkaa
         accu: G10630000152 (G1 is “generatie”, 06 waarschijnlijk bouwjaar)
     Km stand: 16089
     tripstand: 0
+Läuft, aber unterstützt nicht: Attempt (failed) from a forum member to get assist to work by emulating BMS/display
+Kommunikation mit ION Emulation: Second attempt (failed) from a forum member to get assist to work by emulating BMS/display
