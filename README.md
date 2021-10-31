@@ -201,6 +201,27 @@ Messages to the motor are always sent by the BMS.
 Other then the messages described below, these can also be `0` handoff, or `4` ping messages.
 When the motor is on, the BMS and motor generally take turns in sending messages, using the handoff message to return control to the other.
 
+## `09` Put data
+This message is sent by the BMS to the motor.
+The `09` messages seem to always be a push of data from source to target.
+The data pushed seems to be structured, and contain a type per value.
+The response seems to always be `00`, maybe that's an error code, where `00` is ok?
+The request payload to the motor always seems to be in the form: `94-b0-xxxx-14-b1-xxxx`.
+The b0 and b1 values are likely the types for the two contained values.
+The xxxx parts are the actual values.
+The right nibble of the `94` and `14` values are likely the length of the values, in nibbles.
+The left nibble is probably some bit flags, with the leftmost bit indicating if there's a value following the current one.
+This can be seen in the occasional message where the second value is missing, which has payload: `14-b0-xxxx`
+So far the b1 (right) value looks like the battery voltage in 0.1 volt precision.
+The b0 (left) value is almost always 2500. I've only seen it change when the battery is getting very low (0668, 0514, 1287, 0990 are some values).
+One though is it might be the speed limit for the motor (25km/h is the legal limit here), but the other values seem very low for that.
+
+Full examples:
+
+- `[10-0128-0994b009c414b100f1-86]` - Push data message to motor, b0:2500 b1:0241 (24.1v)
+- `[10-0124-0914b009c4-e0]` - Push data message to motor with only value b0:2500
+- `[10-2201-0900-d6]` - Ok response from motor
+
 ## `30` Turn on
 This message is sent by the BMS to the motor.
 There is no payload in either the request or response.
