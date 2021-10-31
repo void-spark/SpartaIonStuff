@@ -204,7 +204,7 @@ When the motor is on, the BMS and motor generally take turns in sending messages
 ## `30` Turn on
 This message is sent by the BMS to the motor.
 There is no payload in either the request or response.
-It's sent usually very shortly after initially pressing the lower button (setting ECO mode).
+It's sent usually very shortly after initially pressing the lower button (setting ECO mode), or turning on the display by just riding the bike.
 Normally the motor does not send any messages before receiving this message.
 Best guess so far it's a 'on' command of sorts for the motor, taking it out of low power mode?
 
@@ -221,7 +221,20 @@ Best guess so far it's a 'off' command of sorts for the motor, putting it into l
 Not sure what the value 00/01 means, both seem to be used, haven't found a distinct pattern yet.
 Usually soon followed by a `11` message from the motor to the BMS.
 
-- `[10-0121-3100-22]` - 'on' message to motor, with value '00'
-- `[10-2200-31-1a]` - 'on' response from motor
+Full examples:
 
+- `[10-0121-3100-22]` - 'off' message to motor, with value '00'
+- `[10-2200-31-1a]` - 'off' response from motor
 
+## `32` Enable assist
+This message is sent by the BMS to the motor.
+There is no payload in either the request or response.
+It's sent usually very shortly after setting a assist mode on the display.
+It's sent only if the motor has already been turned on by a 'on' command.
+Best guess so far it's a 'enable assist' command of sorts for the motor?
+Usually soon followed by a `12` message from the motor to the BMS with value '01'.
+
+Full examples:
+
+- `[10-0120-32-75]` - 'enable assist' message to motor
+- `[10-2200-32-ea]` - 'enable assist' response from motor
