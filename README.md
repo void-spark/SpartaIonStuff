@@ -201,6 +201,31 @@ Messages to the motor are always sent by the BMS.
 Other then the messages described below, these can also be `0` handoff, or `4` ping messages.
 When the motor is on, the BMS and motor generally take turns in sending messages, using the handoff message to return control to the other.
 
+## `08` Get data
+This message is sent by the BMS to the motor.
+The `08` messages seem to always be a request for data from source to target, with the requesting data being sent back in the result.
+The data requested and returned seems to be structured, the request specifies which data to get.
+For the request from the BMS to the motor the structure of the data actually seems to be a sort of array, being retrieved in multiple messages.
+Request payload is in the form `48-4[de]-0[024]`.
+The right nibble of the first byte probably gives the length of a single array element in nibbles, the left nibble might specify it's an array.
+The next byte is probably the value to be retrieved, either `4d` or `4e`. The last byte seems to be an index into the array, 0, 2 or 4.
+The response is in the form `00-48-4[de]-02-xxxxxxxxyyyyyyyy` or `00-48-4[de]-00`.
+The first byte is always 0, not sure why its there.
+The second byte seems to match the first value of the request, so `48` again. Same for the third byte, `4[de]`.
+The next byte seems to indicate the array element count returned, either 2 or or 0.
+After that there's the actual array values. For both `4d` and `4e` there's 4 values of 4 bytes each.
+Both `4d` and `4e` are normally requested after each other. So far I'm not sure yet what they mean yet.
+The values are usually not that big, often also 0. The second value in each array is usually the largest,
+and interestingly that value in `4e` is usually very roughly two times as big as the same value in `4d`.
+
+Full examples:
+- `[10-0123-08484d00-10]` - Request elements of array value `4d`, offset 0
+- `[10-220c-0800484d02000000030000039f-7d]` - Response with 2 elements of array value `4d`
+- `[10-0123-08484d02-71]` - Request elements of array value `4d`, offset 2
+- `[10-220c-0800484d020000000500000009-60]` - Response with 2 elements of array value `4d`
+- `[10-0123-08484d04-d2]` - Request elements of array value `4d`, offset 4
+- `[10-2204-0800484d00-e8]` - Response with 0 elements of array value `4d`
+
 ## `09` Put data
 This message is sent by the BMS to the motor.
 The `09` messages seem to always be a push of data from source to target.
