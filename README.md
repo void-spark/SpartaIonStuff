@@ -197,9 +197,11 @@ Full examples:
 
 
 # Messages to motor controller
+Messages to the motor are always sent by the BMS.
+Other then the messages described below, these can also be `0` handoff, or `4` ping messages.
+When the motor is on, the BMS and motor generally take turns in sending messages, using the handoff message to return control to the other.
 
 ## `30` Turn on
-
 This message is sent by the BMS to the motor.
 There is no payload in either the request or response.
 It's sent usually very shortly after initially pressing the lower button (setting ECO mode).
@@ -221,6 +223,5 @@ Usually soon followed by a `11` message from the motor to the BMS.
 
 - `[10-0121-3100-22]` - 'on' message to motor, with value '00'
 - `[10-2200-31-1a]` - 'on' response from motor
-
 
 
