@@ -198,4 +198,29 @@ Full examples:
 
 # Messages to motor controller
 
+## `30` Turn on
+
+This message is sent by the BMS to the motor.
+There is no payload in either the request or response.
+It's sent usually very shortly after initially pressing the lower button (setting ECO mode).
+Normally the motor does not send any messages before receiving this message.
+Best guess so far it's a 'on' command of sorts for the motor, taking it out of low power mode?
+
+Full examples:
+
+- `[10-0120-30-14]` - 'on' message to motor
+- `[10-2200-30-8b]` - 'on' response from motor
+
+## `31` Turn off
+Sent (among others) some time after setting the display to 'off' using the lower button.
+Request has a single byte payload which seems to only be '00' or '01', response has no payload.
+After this the motor usually sends serveral special messages, and then stops sending, or responding to messages.
+Best guess so far it's a 'off' command of sorts for the motor, putting it into low power mode?
+Not sure what the value 00/01 means, both seem to be used, haven't found a distinct pattern yet.
+Usually soon followed by a `11` message from the motor to the BMS.
+
+- `[10-0121-3100-22]` - 'on' message to motor, with value '00'
+- `[10-2200-31-1a]` - 'on' response from motor
+
+
 
