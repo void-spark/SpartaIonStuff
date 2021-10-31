@@ -232,9 +232,34 @@ There is no payload in either the request or response.
 It's sent usually very shortly after setting a assist mode on the display.
 It's sent only if the motor has already been turned on by a 'on' command.
 Best guess so far it's a 'enable assist' command of sorts for the motor?
-Usually soon followed by a `12` message from the motor to the BMS with value '01'.
+Usually soon followed by a `12` message from the motor to the BMS with value `01`.
 
 Full examples:
 
 - `[10-0120-32-75]` - 'enable assist' message to motor
 - `[10-2200-32-ea]` - 'enable assist' response from motor
+
+## `33` Disable assist
+This message is sent by the BMS to the motor.
+There is no payload in either the request or response.
+It's sent usually very shortly after setting the assist level 'off' on the display.
+Quite often just before sending an 'off' command to the motor, but not always (I guess when the bike is still moving).
+Best guess so far it's a 'disable assist' command of sorts for the motor?
+Usually soon followed by a `12` message from the motor to the BMS with value `00`.
+
+Full examples:
+
+- `[10-0120-33-e4]` - 'disable assist' message to motor
+- `[10-2200-33-7b]` - 'disable assist' response from motor
+
+## `34` Set assist level
+This message is sent by the BMS to the motor.
+The request has a single byte payload, with value `01`,`02` or `03`. The response has no payload.
+It's sent usually very shortly after setting the assist level on the display, including the initial level.
+It's always sent after enabling assist with `32`, and before disabling assist with `33`.
+Best guess so far it's a 'set assist' command of sorts for the motor?
+
+Full examples:
+
+- `[10-0121-3401-7f]` - 'set assist' message to motor with value '01'
+- `[10-2200-33-7b]` - 'set assist' response from motor
