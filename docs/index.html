@@ -79,6 +79,9 @@
 
     function fromHexString(hexString) {
       var tokens = hexString.match(/[\da-z]{2}/gi);
+      if(tokens == null) {
+      	return [];
+      }
       return tokens.map(t => parseInt(t, 16));
     }
 
