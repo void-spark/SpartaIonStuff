@@ -21,13 +21,13 @@
   <body>
     <h1>ION Message calculator</h1>
     <p>
-      <div>Message type:</div> <input type="text" id="type" name="type" value="1" size="1">
+      <div>Message type in hex:</div> <input type="text" id="type" name="type" value="1" size="1">
     </p>
     <p>
-      <div>Message source:</div> <input type="text" id="source" name="source" value="4" size="1">
+      <div>Message source in hex:</div> <input type="text" id="source" name="source" value="4" size="1">
     </p>
     <p>
-      <div>Message target:</div> <input type="text" id="target" name="target" value="0" size="1">
+      <div>Message target in hex:</div> <input type="text" id="target" name="target" value="0" size="1">
     </p>
     <p>
       <div>Message command in hex:</div> <input type="text" id="command" name="command" value="9" size="1">
@@ -89,31 +89,42 @@
     calculate.onclick = e => {
       var payloadValues = fromHexString(payload.value);
 
+      const targetVal = parseInt(target.value, 16)
+      const typeVal = parseInt(type.value, 16);
+      const sourceVal = parseInt(source.value, 16);
+      const commandVal = parseInt(command.value, 16);
+
+      
       if(payloadValues.length > 0xf) {
         output.innerHTML = "Payload too long";
         return;  
       }
 
-      if(target.value > 0xf) {
+      if(targetVal > 0xf) {
         output.innerHTML = "Target value too large";
         return;  
       }
 
-      if(source.value > 0xf) {
+      if(sourceVal > 0xf) {
         output.innerHTML = "Source value too large";
         return;  
       }
 
-      if(type.value > 0xf) {
+      if(typeVal > 0xf) {
         output.innerHTML = "Type value too large";
+        return;  
+      }
+
+      if(commandVal > 0xff) {
+        output.innerHTML = "Command value too large";
         return;  
       }
 
 
       var full = [0x10];
-      full.push(0x10 * parseInt(target.value, 16) + parseInt(type.value, 16));
-      full.push(0x10 * parseInt(source.value, 16) + payloadValues.length);
-      full.push(command.value);
+      full.push(0x10 * targetVal + typeVal);
+      full.push(0x10 * sourceVal + payloadValues.length);
+      full.push(commandVal);
 
       full = full.concat(payloadValues);
       full.push(calc_crc(full));
