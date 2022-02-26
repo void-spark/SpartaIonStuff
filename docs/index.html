@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>ION Message calculator</title>
+    <style type="text/css">
+      #calculate {
+        background-color: lightblue;
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>ION Message calculator</h1>
+    <p>
+      <div>Message type in hex:</div> <input type="text" id="type" name="type" value="1" size="1">
+    </p>
+    <p>
+      <div>Message source in hex:</div> <input type="text" id="source" name="source" value="4" size="1">
+    </p>
+    <p>
+      <div>Message target in hex:</div> <input type="text" id="target" name="target" value="0" size="1">
+    </p>
+    <p>
+      <div>Message command in hex:</div> <input type="text" id="command" name="command" value="9" size="1">
+    </p>
+    <p>
+      <div>Message payload in hex:</div> <input type="text" id="payload" name="payload" value="40 5b 00 08 08 13 32 10 00 00 00 18 09" size="50">
+    </p>
+    <br>
+    <div id="calculate" class="button">Calculate!</div>
+    <p id="output">-</p>
+  </body>
+  <script type="text/javascript">
+    const output = document.getElementById('output')
+    const calculate = document.getElementById('calculate')
+    const type = document.getElementById('type')
+    const source = document.getElementById('source')
+    const target = document.getElementById('target')
+    const payload = document.getElementById('payload')
+
+    const crcInit = 0x07;
+    const crcPoly = 0x42;
+
+    function calc_crc(message) {
+      var crc = crcInit
+
+      message.forEach(data => {
+        for (var i = 0; i < 8; i++) {
+          var f = ((crc ^ data) & 0x01);
+          if (f == 0x01) {
+            crc = crc ^ crcPoly
+          }
+          crc = (crc >> 1) & 0x7F
+          if (f == 0x01) {
+            crc = crc | 0x80
+          }
+          data = data >> 1
+        }
+      });
+      return crc;
+    }
+
+    function decimalToHex(d) {
+        var hex = Number(d).toString(16);
+        while (hex.length < 2) {
+            hex = "0" + hex;
+        }
+        return hex;
+    }
+
+    function fromHexString(hexString) {
+      var tokens = hexString.match(/[\da-z]{2}/gi);
+      if(tokens == null) {
+      	return [];
+      }
+      return tokens.map(t => parseInt(t, 16));
+    }
+
+    function toHexString(values) {
+      return values.map(val => decimalToHex(val)).join(" ");
+    }
+
+    calculate.onclick = e => {
+      var payloadValues = fromHexString(payload.value);
+
+      const targetVal = parseInt(target.value, 16)
+      const typeVal = parseInt(type.value, 16);
+      const sourceVal = parseInt(source.value, 16);
+      const commandVal = parseInt(command.value, 16);
+
+      
+      if(payloadValues.length > 0xf) {
+        output.innerHTML = "Payload too long";
+        return;  
+      }
+
+      if(targetVal > 0xf) {
+        output.innerHTML = "Target value too large";
+        return;  
+      }
+
+      if(sourceVal > 0xf) {
+        output.innerHTML = "Source value too large";
+        return;  
+      }
+
+      if(typeVal > 0xf) {
+        output.innerHTML = "Type value too large";
+        return;  
+      }
+
+      if(commandVal > 0xff) {
+        output.innerHTML = "Command value too large";
+        return;  
+      }
+
+
+      var full = [0x10];
+      full.push(0x10 * targetVal + typeVal);
+      full.push(0x10 * sourceVal + payloadValues.length);
+      full.push(commandVal);
+
+      full = full.concat(payloadValues);
+      full.push(calc_crc(full));
+
+      output.innerHTML = toHexString(full);
+    }
+  </script>
+</html>
+
