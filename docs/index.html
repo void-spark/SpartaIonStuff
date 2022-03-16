@@ -132,7 +132,10 @@
       full = full.concat(payloadValues);
       full.push(calc_crc(full));
 
-      output.innerHTML = toHexString(full);
+      var message = toHexString(full);
+      var escaped = message.substr(0,2) + message.substr(2).replaceAll('10', '10 10');
+
+      output.innerHTML = "Message: " + message + "<br>" + "Escaped: " + escaped;
     }
   </script>
 </html>
