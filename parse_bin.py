@@ -9,6 +9,7 @@ from message_parser import MessageParser
 parser = argparse.ArgumentParser(description='Raw byte log parser.')
 parser.add_argument('-d', action='store_true', dest='dense')
 parser.add_argument('-u', action='store_true', dest='unknown')
+parser.add_argument('-v', action='store_true', dest='verbose')
 args = parser.parse_args()
 
 if args.dense:
@@ -22,6 +23,9 @@ messageParser = MessageParser(printer)
 
 sys.stdin = sys.stdin.detach()
 while (byte := sys.stdin.read(1)):
+  if args.verbose:
+    print(f"[{byte.hex()}]", end='')
+    sys.stdout.flush()
   messageParser.feed(byte)
 
 print("[DONE]")
