@@ -277,19 +277,19 @@ def printPacketDense(source, target, type, size, message):
 
     if message[3] == 0x11:
       if type == 0x01:
-        print(f" - MYSTERY BATTERY COMMAND 11 {message[4:-1].hex()}", end='')
+        print(f" - MYSTERY BATTERY COMMAND 11 MOTOR OFF UPDATE {message[4:-1].hex()}", end='')
       if type == 0x02:
-        print(f" - MYSTERY BATTERY COMMAND 11 - OK {message[4:-1].hex()}", end='')
+        print(f" - MYSTERY BATTERY COMMAND 11 MOTOR OFF UPDATE - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x12:
       if type == 0x01:
-        print(f" - MYSTERY BATTERY COMMAND 12 {message[4:-1].hex()}", end='')
+        print(f" - MYSTERY BATTERY COMMAND 12 ASSISTANCE STATUS UPDATE (ON/OFF) {message[4:-1].hex()}", end='')
       if type == 0x02:
-        print(f" - MYSTERY BATTERY COMMAND 12 - OK {message[4:-1].hex()}", end='')
+        print(f" - MYSTERY BATTERY COMMAND 12 ASSISTANCE STATUS UPDATE (ON/OFF) - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x15:
       if type == 0x01:
-        print(f" - MYSTERY BATTERY COMMAND 15 {message[4:-1].hex()}", end='')
+        print(f" - MYSTERY BATTERY COMMAND 15 {message[4:-1].hex()}", end='') # Possibly we ran out of power?
       if type == 0x02:
         print(f" - MYSTERY BATTERY COMMAND 15 - OK {message[4:-1].hex()}", end='')
 

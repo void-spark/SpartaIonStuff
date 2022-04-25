@@ -78,6 +78,8 @@ async def poller(writer):
 
             # numbers are 0-9, a='-', b='b', c=' ', d='d', e='e', f='f'
 
+            # Nibble between kmh and km seems to affect if km is shown (c=no, f=yes)
+
 
             segments1 = 0b11111111
             segments2 = 0b11110001
