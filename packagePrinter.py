@@ -3,6 +3,8 @@ from bow_crc import crc
 def who(value):
   if value == 0x0C:
     return "DP"
+  elif value == 0x04:
+    return "PC"
   elif value == 0x02:
     return "BT"
   elif value == 0x00:
@@ -35,12 +37,12 @@ def printPacket(source, target, type, size, message):
   if type == 0x00:
       print(f" - HANDOFF", end='')
 
-
-  ## TO MOTOR (always from batt)
-  if (type == 0x01 and source == 0x02 and target == 0x00) or (type == 0x02 and source == 0x00 and target == 0x02):
+  if type == 0x01 or type == 0x02:
 
     if message[3] == 0x08:
-      if type == 0x01: # Payload: 3
+      if type == 0x01:
+        # [10-2104-089438283a-d7] Always it seems Asks for 9438 and 283a?
+
         # [10-0123-08484d00-10] Always these 6 in sequence
         # [10-0123-08484d02-71] All 8484-4[de]-0[024] 00/02/04 is offset in array
         # [10-0123-08484d04-d2]
@@ -48,7 +50,18 @@ def printPacket(source, target, type, size, message):
         # [10-0123-08484e02-35]
         # [10-0123-08484e04-96]
         print(f" - GET DATA {message[4:-1].hex()}", end='')
-      if type == 0x02: # Payload: 12/4
+      if type == 0x02:
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 42f8 283a 3e789c11-db] Repeated by the battery which wanted a new(?) style display
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 403f 283a 3e651da8-df] One for each log usually. At start of log, repeats data from last 09 command 
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4132 283a 3e90fea6-4c]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4130 283a 3e90ccaf-0e]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 412e 283a 3e908bc1-55]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4130 283a 3e9040cd-fd]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4129 283a 3e900932-45]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4127 283a 3e9135d4-48]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 405a 283a 3e6b0c51-c5]
+        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4047 283a 3e651da8-85]
+
         # [10-220c-0800484d020000000000000000-eb] 02 is element count
         # [10-220c-0800484d020000000000000000-eb]
         # [10-2204-0800484d00-e8]                 00 is element count
@@ -83,11 +96,22 @@ def printPacket(source, target, type, size, message):
         # [10-220c-0800484e0200000018000007a5-bc]
         # [10-220c-0800484e02000000080000000e-12]
         # [10-2204-0800484e00-ac]
-
         print(f" - GET DATA - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x09:
-      if type == 0x01: # Payload: 4
+      if type == 0x01:
+        # [10-210A-0994C000C708C100000006-D2] (from notes)
+        # [10-210a-0994c0000008c100000000-15] Every second. byte 6+7 (left) is speed in km/h*10 so 0x09 is status update command?
+        # [10-210a-0994c000bc08c1000000be-09] Bytes on the right look like trip(total km?) SINCE MOTOR POWER ON, in 10 m increments, left is speed??. (94)c0/(08)c1 might be data type? 
+        # [10-210a-0994384132283a3e90fea6-4a] Uncommon, shutdown confirmation? 38/83 here total km? avg? At end of log, data will be repeated by next 08
+        # [10-210a-0994384130283a3e90ccaf-08]
+        # [10-210a-099438412e283a3e908bc1-53]
+        # [10-210a-0994384130283a3e9040cd-fb]
+        # [10-210a-0994384129283a3e900932-43]
+        # [10-210a-099438412b283a3e8fcbe2-94]
+        # [10-210a-0994384056283a3e6d10ed-8b]
+        # [10-210a-0994384045283a3e651da8-21]
+
         # [10-0128-0994b009c414b1....-..] (from notes) die nächsten beiden Bytes Akku-Stand?!
         # [10-0128-0994b009c414b1010e-ca]
         # [10-0128-0994b009c414b1010e-ca]
@@ -97,9 +121,13 @@ def printPacket(source, target, type, size, message):
         # [10-0124-0914b009c4-e0] Every second
         print(f" - PUT DATA {message[4:-1].hex()}", end='')
       if type == 0x02: # Payload: 1
+        # [10-0221-0900-ab] Befehl 09 wird immer mit Payload 0x00 quittiert
+
         # [10-2201-0900-d6] [0900] Befehl 09 wird immer mit Payload 0x00 quittiert
         print(f" - PUT DATA - OK {message[4:-1].hex()}", end='')
 
+  ## TO MOTOR (always from batt.. or PC?)
+  if (type == 0x01 and (source == 0x02 or source == 0x04) and target == 0x00) or (type == 0x02 and source == 0x00 and (target == 0x02 or target == 0x04)):
     if message[3] == 0x30:
       if type == 0x01: # Payload: 0
         # [10-0120-30-14]
@@ -146,60 +174,24 @@ def printPacket(source, target, type, size, message):
         # [10-2200-34-49]
         print(f" - SET ASSIST LEVEL - OK {message[4:-1].hex()}", end='')
 
-  ## TO Battery (always from motor)
-  if (type == 0x01 and source == 0x00 and target == 0x02) or (type == 0x02 and source == 0x02 and target == 0x00):
-
-    if message[3] == 0x08:
-      if type == 0x01:
-          # [10-2104-089438283a-d7] Always it seems Asks for 9438 and 283a?
-          print(f" - GET DATA {message[4:-1].hex()}", end='')
-      if type == 0x02:
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 42f8 283a 3e789c11-db] Repeated by the battery which wanted a new(?) style display
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 403f 283a 3e651da8-df] One for each log usually. At start of log, repeats data from last 09 command 
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4132 283a 3e90fea6-4c]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4130 283a 3e90ccaf-0e]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 412e 283a 3e908bc1-55]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4130 283a 3e9040cd-fd]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4129 283a 3e900932-45]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4127 283a 3e9135d4-48]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 405a 283a 3e6b0c51-c5]
-          # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4047 283a 3e651da8-85]
-          print(f" - GET DATA - OK {message[7:9].hex()} {message[12:15].hex()} ({message[4:-1].hex()})", end='')
-
-    if message[3] == 0x09:
-      if type == 0x01: # Payload: 10
-          # [10-210A-0994C000C708C100000006-D2] (from notes)
-          # [10-210a-0994c0000008c100000000-15] Every second. byte 6+7 (left) is speed in km/h*10 so 0x09 is status update command?
-          # [10-210a-0994c000bc08c1000000be-09] Bytes on the right look like trip(total km?) SINCE MOTOR POWER ON, in 10 m increments, left is speed??. (94)c0/(08)c1 might be data type? 
-          # [10-210a-0994384132283a3e90fea6-4a] Uncommon, shutdown confirmation? 38/83 here total km? avg? At end of log, data will be repeated by next 08
-          # [10-210a-0994384130283a3e90ccaf-08]
-          # [10-210a-099438412e283a3e908bc1-53]
-          # [10-210a-0994384130283a3e9040cd-fb]
-          # [10-210a-0994384129283a3e900932-43]
-          # [10-210a-099438412b283a3e8fcbe2-94]
-          # [10-210a-0994384056283a3e6d10ed-8b]
-          # [10-210a-0994384045283a3e651da8-21]
-          print(f" - PUT DATA {message[6:8].hex()} {message[11:14].hex()} ({message[4:-1].hex()})", end='')
-      if type == 0x02: # Payload: 1
-          # [10-0221-0900-ab] Befehl 09 wird immer mit Payload 0x00 quittiert
-          print(f" - PUT DATA - OK {message[4:-1].hex()}", end='')
-
+  ## TO Battery (always from motor.. or PC?)
+  if (type == 0x01 and (source == 0x00 or source == 0x04) and target == 0x02) or (type == 0x02 and source == 0x02 and (target == 0x00 or target == 0x04)):
     if message[3] == 0x11:
       if type == 0x01: # Payload: 0
         # [10-2100-11-f0]
-        print(f" - MYSTERY BATTERY COMMAND 11 {message[4:-1].hex()}", end='')
+        print(f" - MOTOR OFF UPDATE {message[4:-1].hex()}", end='')
       if type == 0x02: # Payload: 0
         # [10-0220-11-6f] 
-        print(f" - MYSTERY BATTERY COMMAND 11 - OK {message[4:-1].hex()}", end='')
+        print(f" - MOTOR OFF UPDATE - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x12:
       if type == 0x01: # Payload: 1
         # [10-2101-1201-41] // Right after telling the motor to turn on assistance
         # [10-2101-1200-d0] // Right after telling the motor to turn off assistance
-        print(f" - MYSTERY BATTERY COMMAND 12 {message[4:-1].hex()}", end='')
+        print(f" - ASSIST STATUS UPDATE (ON/OFF) {message[4:-1].hex()}", end='')
       if type == 0x02: # Payload: 0
         # [10-0220-12-9f]
-        print(f" - MYSTERY BATTERY COMMAND 12 - OK {message[4:-1].hex()}", end='')
+        print(f" - ASSIST STATUS UPDATE (ON/OFF) - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x15:
       if type == 0x01: # Payload: 0
@@ -209,64 +201,109 @@ def printPacket(source, target, type, size, message):
         # [10-0220-15-ad]
         print(f" - MYSTERY BATTERY COMMAND 15 - OK {message[4:-1].hex()}", end='')
 
-  ## TO DISPLAY (either from battery or motor)
+  ## TO DISPLAY
   if (type == 0x01 and target == 0x0C) or (type == 0x02 and source == 0x0C):
-    if (type == 0x01 and source == 0x02) or (type == 0x02 and target == 0x02):
-      if message[3] == 0x25:
-        if type == 0x01: # Payload: 2
-          # [10-c122-250408-84] Always 0408, always once when the display is turned on
-          print(f" - MYSTERY DISPLAY COMMAND 25 {message[4:-1].hex()}", end='')
-        if type == 0x02: # Payload: 0
-          # [10-22c0-25-29]
-          print(f" - MYSTERY DISPLAY COMMAND 25 - OK {message[4:-1].hex()}", end='')
+    if message[3] == 0x04:
+      if type == 0x01: # Payload: 0
+        # [10-c120-04-d3] Also sent with CU2 sometimes, at an interval? Might precede 17 on CU3
+        print(f" - MYSTERY DISPLAY COMMAND 04 {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 0
+        # [10-22c0-04-61]
+        print(f" - MYSTERY DISPLAY COMMAND 04 - OK {message[4:-1].hex()}", end='')
 
-      if message[3] == 0x26:
-        if type == 0x01: # Payload: 9
-          # [10-C129-26C030C343C199FCCCC0-86] (from notes) Display update? Byte 8 & 0x0F ist 10er Stelle, Byte 9 & 0xF0 ist 1er Stelle, Byte 9 & 0x0F ist erste Nachkommastelle vom Speed.
-                                                            # Nachricht ans Display für Balken:
-                                                            # Segmente in Byte 4:
-                                                            # off = 		0x01 | 0x02	=	0x03
-                                                            # eco = 		0x04 | 0x08	=	0x0C
-                                                            # normal =	0x10 | 0x20	=	0x30
-                                                            # power = 	0x40 | 0x80 =	0xC0
-          # [10-c129-26030cc000c000f09104-dc] LEVEL: 03, speed '00.0'
-          # [10-c129-260c0cc362c000f09104-a3] LEVEL: 0c
-          # [10-c129-26300cc362c000f09104-c6] LEVEL: 30
-          # [10-c129-26c00cc362c000f09104-11] LEVEL: c0
-          # [10-c129-26030cc362c000f09104-4b] LEVEL: 03
-          # [10-c129-260330c000c000fcccc0-70] LEVEL: 03
-          # [10-c129-260c0cc361c000f09104-65] LEVEL: 0c
-          # [10-c129-260c30c361c000fcccc0-c9] LEVEL: 0c
-          print(f" - UPDATE DISPLAY: {message[4:5].hex()}, rest={message[5:-1].hex()}", end='')
-        if type == 0x02: # Payload: 0
-          # [10-22c0-26-d9]
-          print(f" - UPDATE DISPLAY - OK {message[4:-1].hex()}", end='')
+    if message[3] == 0x17:
+      if type == 0x01: # Payload: 1
+        # [10-c121-1704-ff] Only seen on CU3 so far, 04/05 while playing with menu. Thi3rryzz: Status/err cmd? payload 04/05/14 so far
+        print(f" - MYSTERY DISPLAY COMMAND 17: {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 0
+        # [10-22c0-17-5c]
+        print(f" - MYSTERY DISPLAY COMMAND 17 - OK {message[4:-1].hex()}", end='')
 
-      if message[3] == 0x27:
-        if type == 0x01: # Payload: 9
-          # [10-c129-270330c00000003cccc0-d4] Looks a lot like display update, sets a default? 
-          print(f" - MYSTERY DISPLAY COMMAND 27 {message[4:-1].hex()}", end='')
-        if type == 0x02: # Payload: 0
-          # [10-22c0-27-48] 
-          print(f" - MYSTERY DISPLAY COMMAND 27 - OK {message[4:-1].hex()}", end='')
+    if message[3] == 0x20:
+      if type == 0x01: # Payload: 0
+          # [10-c100-20-03]
+          print(f" - GET DISPLAY SERIAL# {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 8
+          # [10-02C8-200506000000002306-0A] (from notes, serial 0506 2306)
+          # [10-02c8-201641100000000266-42] - my serial is actually 164110266, 9 chars, not 8 like some others
+          print(f" - GET DISPLAY SERIAL# - OK {message[4:6].hex()} {message[10:12].hex()} ({message[4:-1].hex()})", end='')
 
-      if message[3] == 0x22:
-        if type == 0x01: # Payload: 1
-            # Starts with a single 0x08, then cycles through values 0x00-0x0F. Every 100ms
-            print(f" - BUTTON CHECK {message[4:-1].hex()}", end='')
-        if type == 0x02: # Payload: 2
-            # Cycles through 0x0000-0x00FF. Sometimes repeats the last value. First byte changes if button pressed: 02: bottom, 01: top, 03: both
-            print(f" - BUTTON CHECK - OK {message[4:-1].hex()}", end='')
+    if message[3] == 0x22:
+      if type == 0x01: # Payload: 1
+          # Starts with a single 0x08, then cycles through values 0x00-0x0F. Every 100ms
+          print(f" - BUTTON CHECK {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 2
+          # Cycles through 0x0000-0x00FF. Sometimes repeats the last value. First byte changes if button pressed: 02: bottom, 01: top, 03: both
+          print(f" - BUTTON CHECK - OK {message[4:-1].hex()}", end='')
 
-    if (type == 0x01 and source == 0x00) or (type == 0x02 and target == 0x00):
-      if message[3] == 0x20:
-        if type == 0x01: # Payload: 0
-            # [10-c100-20-03]
-            print(f" - GET DISPLAY SERIAL# {message[4:-1].hex()}", end='')
-        if type == 0x02: # Payload: 8
-            # [10-02C8-200506000000002306-0A] (from notes, serial 0506 2306)
-            # [10-02c8-201641100000000266-42] - my serial is actually 164110266, 9 chars, not 8 like some others
-            print(f" - GET DISPLAY SERIAL# - OK {message[4:6].hex()} {message[10:12].hex()} ({message[4:-1].hex()})", end='')
+    if message[3] == 0x25:
+      if type == 0x01: # Payload: 2
+        # [10-c122-250408-84] Always 0408, always once when the display is turned on
+        print(f" - MYSTERY DISPLAY COMMAND 25 {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 0
+        # [10-22c0-25-29]
+        print(f" - MYSTERY DISPLAY COMMAND 25 - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x26 or message[3] == 0x27:
+      if type == 0x01:
+        if message[3] == 0x26:
+          print(f" - UPDATE DISPLAY(CU2): ", end='')
+        if message[3] == 0x27:
+          print(f" - UPDATE IDLE DISPLAY(CU2): ", end='')
+
+        if message[4] & 0x03 != 0:
+          print(f"OFF ", end='')
+        if message[4] & 0x0C != 0:
+          print(f"ECO ", end='')
+        if message[4] & 0x30 != 0:
+          print(f"NRM ", end='')
+        if message[4] & 0xC0 != 0:
+          print(f"POW ", end='')
+
+        if message[5] & 0x03 != 0:
+          print(f"WRE ", end='')
+        if message[5] & 0x0C != 0:
+          print(f"TOT ", end='')
+        if message[5] & 0x30 != 0:
+          print(f"TRP ", end='')
+        if message[5] & 0xC0 != 0:
+          print(f"LIG ", end='')
+
+        if message[6] & 0x03 != 0:
+          print(f"BAR ", end='')
+        if message[6] & 0x30 != 0:
+          print(f"COM ", end='')
+        if message[6] & 0xC0 != 0:
+          print(f"KM ", end='')
+
+        print(f"{message[7]:02d}% ", end='')
+
+        spd = message[8:10].hex()
+        print(f"'{spd[1:3] + '.' + spd[3:]}' ", end='')
+        print(f"'{message[10:13].hex()[1:].replace('c', ' ').replace('a', '-')}' ", end='')
+
+      if type == 0x02: # Payload: 0
+        if message[3] == 0x26:
+          print(f" - UPDATE DISPLAY(CU2) - OK {message[4:-1].hex()}", end='')
+        if message[3] == 0x27:
+          print(f" - UPDATE IDLE DISPLAY(CU2) - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x28:
+      if type == 0x01: # Payload: 13
+        # [10-c12d-2800000000000000000000000000-a8]
+        print(f" - UPDATE DISPLAY(CU3): {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 1
+        # [10-22c1-2801-60]
+        print(f" - UPDATE DISPLAY(CU3) - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x29:
+      if type == 0x01: # Payload: 1
+        # [10-c121-2916-b6] So far only once while playing with menu
+        print(f" - MYSTERY DISPLAY COMMAND 29 {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 0
+        # [10-22c0-29-2c] 
+        print(f" - MYSTERY DISPLAY COMMAND 29 - OK {message[4:-1].hex()}", end='')
+
 
   print()
 
