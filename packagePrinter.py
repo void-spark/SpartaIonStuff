@@ -28,6 +28,9 @@ def typeName(type):
   if type == 0x18:
     return "Battery level"
 
+  if type == 0x1a:
+    return "Max battery level"
+
   if type == 0x32:
     return "Battery serial#"
 
