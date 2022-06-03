@@ -12,6 +12,18 @@ def who(value):
   else:
     return bytes([value]).hex()
 
+def printBlink(name, input, shift):
+  val = (input >> shift) & 0x03 
+  if val != 0x00:
+    print(f"{name}", end='')
+    if val == 0x01:
+      print(f":FST", end='')
+    if val == 0x02:
+      print(f":SLW", end='')
+    if val == 0x03:
+      print(f":SOL", end='')
+    print(f" ", end='')
+
 def printPacket(source, target, type, size, message):
   print(f"tgt:{who(target)} typ:{type}", end='')
   if type == 0x00: # Collision prevention, 'you may send next'. Sent by one component, or the one mentioned sends the next one?
@@ -41,8 +53,6 @@ def printPacket(source, target, type, size, message):
 
     if message[3] == 0x08:
       if type == 0x01:
-        # [10-2104-089438283a-d7] Always it seems Asks for 9438 and 283a?
-
         # [10-0123-08484d00-10] Always these 6 in sequence
         # [10-0123-08484d02-71] All 8484-4[de]-0[024] 00/02/04 is offset in array
         # [10-0123-08484d04-d2]
@@ -51,17 +61,6 @@ def printPacket(source, target, type, size, message):
         # [10-0123-08484e04-96]
         print(f" - GET DATA {message[4:-1].hex()}", end='')
       if type == 0x02:
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 42f8 283a 3e789c11-db] Repeated by the battery which wanted a new(?) style display
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 403f 283a 3e651da8-df] One for each log usually. At start of log, repeats data from last 09 command 
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4132 283a 3e90fea6-4c]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4130 283a 3e90ccaf-0e]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 412e 283a 3e908bc1-55]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4130 283a 3e9040cd-fd]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4129 283a 3e900932-45]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4127 283a 3e9135d4-48]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 405a 283a 3e6b0c51-c5]
-        # tgt:MT typ:2 src:BT [10-022b-08 00 9438 4047 283a 3e651da8-85]
-
         # [10-220c-0800484d020000000000000000-eb] 02 is element count
         # [10-220c-0800484d020000000000000000-eb]
         # [10-2204-0800484d00-e8]                 00 is element count
@@ -103,6 +102,7 @@ def printPacket(source, target, type, size, message):
         # [10-210A-0994C000C708C100000006-D2] (from notes)
         # [10-210a-0994c0000008c100000000-15] Every second. byte 6+7 (left) is speed in km/h*10 so 0x09 is status update command?
         # [10-210a-0994c000bc08c1000000be-09] Bytes on the right look like trip(total km?) SINCE MOTOR POWER ON, in 10 m increments, left is speed??. (94)c0/(08)c1 might be data type? 
+
         # [10-210a-0994384132283a3e90fea6-4a] Uncommon, shutdown confirmation? 38/83 here total km? avg? At end of log, data will be repeated by next 08
         # [10-210a-0994384130283a3e90ccaf-08]
         # [10-210a-099438412e283a3e908bc1-53]
@@ -126,8 +126,6 @@ def printPacket(source, target, type, size, message):
         # [10-2201-0900-d6] [0900] Befehl 09 wird immer mit Payload 0x00 quittiert
         print(f" - PUT DATA - OK {message[4:-1].hex()}", end='')
 
-  ## TO MOTOR (always from batt.. or PC?)
-  if (type == 0x01 and (source == 0x02 or source == 0x04) and target == 0x00) or (type == 0x02 and source == 0x00 and (target == 0x02 or target == 0x04)):
     if message[3] == 0x30:
       if type == 0x01: # Payload: 0
         # [10-0120-30-14]
@@ -174,8 +172,6 @@ def printPacket(source, target, type, size, message):
         # [10-2200-34-49]
         print(f" - SET ASSIST LEVEL - OK {message[4:-1].hex()}", end='')
 
-  ## TO Battery (always from motor.. or PC?)
-  if (type == 0x01 and (source == 0x00 or source == 0x04) and target == 0x02) or (type == 0x02 and source == 0x02 and (target == 0x00 or target == 0x04)):
     if message[3] == 0x11:
       if type == 0x01: # Payload: 0
         # [10-2100-11-f0]
@@ -201,8 +197,6 @@ def printPacket(source, target, type, size, message):
         # [10-0220-15-ad]
         print(f" - MYSTERY BATTERY COMMAND 15 - OK {message[4:-1].hex()}", end='')
 
-  ## TO DISPLAY
-  if (type == 0x01 and target == 0x0C) or (type == 0x02 and source == 0x0C):
     if message[3] == 0x04:
       if type == 0x01: # Payload: 0
         # [10-c120-04-d3] Also sent with CU2 sometimes, at an interval? Might precede 17 on CU3
@@ -212,12 +206,10 @@ def printPacket(source, target, type, size, message):
         print(f" - MYSTERY DISPLAY COMMAND 04 - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x17:
-      if type == 0x01: # Payload: 1
-        # [10-c121-1704-ff] Only seen on CU3 so far, 04/05 while playing with menu. Thi3rryzz: Status/err cmd? payload 04/05/14 so far
-        print(f" - MYSTERY DISPLAY COMMAND 17: {message[4:-1].hex()}", end='')
-      if type == 0x02: # Payload: 0
-        # [10-22c0-17-5c]
-        print(f" - MYSTERY DISPLAY COMMAND 17 - OK {message[4:-1].hex()}", end='')
+      if type == 0x01:
+        print(f" - SHOW ERROR: E-00{message[4:5].hex()}", end='')
+      if type == 0x02:
+        print(f" - SHOW ERROR - OK", end='')
 
     if message[3] == 0x20:
       if type == 0x01: # Payload: 0
@@ -251,30 +243,19 @@ def printPacket(source, target, type, size, message):
         if message[3] == 0x27:
           print(f" - UPDATE IDLE DISPLAY(CU2): ", end='')
 
-        if message[4] & 0x03 != 0:
-          print(f"OFF ", end='')
-        if message[4] & 0x0C != 0:
-          print(f"ECO ", end='')
-        if message[4] & 0x30 != 0:
-          print(f"NRM ", end='')
-        if message[4] & 0xC0 != 0:
-          print(f"POW ", end='')
+        printBlink("OFF", message[4], 0)
+        printBlink("ECO", message[4], 2)
+        printBlink("NRM", message[4], 4)
+        printBlink("POW", message[4], 6)
 
-        if message[5] & 0x03 != 0:
-          print(f"WRE ", end='')
-        if message[5] & 0x0C != 0:
-          print(f"TOT ", end='')
-        if message[5] & 0x30 != 0:
-          print(f"TRP ", end='')
-        if message[5] & 0xC0 != 0:
-          print(f"LIG ", end='')
+        printBlink("WRE", message[5], 0)
+        printBlink("TOT", message[5], 2)
+        printBlink("TRP", message[5], 4)
+        printBlink("LIG", message[5], 6)
 
-        if message[6] & 0x03 != 0:
-          print(f"BAR ", end='')
-        if message[6] & 0x30 != 0:
-          print(f"COM ", end='')
-        if message[6] & 0xC0 != 0:
-          print(f"KM ", end='')
+        printBlink("BAR", message[6], 0)
+        printBlink("COM", message[6], 4)
+        printBlink("KM", message[6], 6)
 
         print(f"{message[7]:02d}% ", end='')
 
@@ -304,6 +285,39 @@ def printPacket(source, target, type, size, message):
         # [10-22c0-29-2c] 
         print(f" - MYSTERY DISPLAY COMMAND 29 - OK {message[4:-1].hex()}", end='')
 
+    if message[3] == 0x1b:
+      if type == 0x01:
+        print(f" - CU3: CALIBRATE {message[4:-1].hex()}", end='')
+      if type == 0x02:
+        print(f" - CU3: CALIBRATE - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x1c:
+      if type == 0x01:
+        print(f" - CU3: SET LIGHT {message[4:-1].hex()}", end='')
+      if type == 0x02:
+        print(f" - CU3: SET LIGHT - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x1d:
+      if type == 0x01:
+        print(f" - CU3: SET ASSIST {message[4:-1].hex()}", end='')
+      if type == 0x02:
+        print(f" - CU3: SET ASSIST - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x01:
+      if type == 0x01: # Payload: 0
+        # [10-21c0-01-01] << Once, while playing with CU3 menu
+        print(f" - MYSTERY BATTERY COMMAND 01 {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 2
+        # [10-c222-010202-03] [010202]
+        print(f" - MYSTERY BATTERY COMMAND 01 - OK {message[4:-1].hex()}", end='')
+
+    if message[3] == 0x14:
+      if type == 0x01: # Payload: 1
+        # [10-21c0-14-9f] Once or twice, a bit before turn on motor.
+        print(f" - MYSTERY BATTERY COMMAND 14 {message[4:-1].hex()}", end='')
+      if type == 0x02: # Payload: 0
+        # [10-c220-14-2d]
+        print(f" - MYSTERY BATTERY COMMAND 14 - OK {message[4:-1].hex()}", end='')
 
   print()
 
