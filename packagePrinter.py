@@ -24,6 +24,62 @@ def printBlink(name, input, shift):
       print(f":SOL", end='')
     print(f" ", end='')
 
+def typeName(type):
+  if type == 0x18:
+    return "Battery level"
+
+  if type == 0x32:
+    return "Battery serial#"
+
+  if type == 0x38:
+    return "Calibration A"
+
+  if type == 0x3a:
+    return "Calibration B"
+
+  if type == 0x5b:
+    return "Paired serial 1"
+
+  if type == 0x5c:
+    return "Paired serial 2"
+
+  if type == 0x80:
+    return "Total distance"
+
+  if type == 0x8e:
+    return "Time"
+
+  return "Unknown"
+
+def printGetData(message):
+  data = message[4:-1]
+
+  index = 0
+  while True:
+      array = (data[index] & 0x40) != 0
+      more = (data[index] & 0x80) != 0
+
+      if array:
+          partSize = 3
+      else:
+          partSize = 2
+
+      part = data[index:index + partSize]
+
+      flags = part[0] & 0x7f
+      type =  part[1]
+
+      print(f" {bytes([flags]).hex()}:{bytes([type]).hex()}", end='')
+      if array:
+        print(f"[{part[2]}]", end='')
+      print(f"({typeName(type)})", end='')
+
+      if more:
+          index += partSize
+      else:
+          break
+
+
 def printPacket(source, target, type, size, message):
   print(f"tgt:{who(target)} typ:{type}", end='')
   if type == 0x00: # Collision prevention, 'you may send next'. Sent by one component, or the one mentioned sends the next one?
@@ -60,6 +116,7 @@ def printPacket(source, target, type, size, message):
         # [10-0123-08484e02-35]
         # [10-0123-08484e04-96]
         print(f" - GET DATA {message[4:-1].hex()}", end='')
+        printGetData(message)
       if type == 0x02:
         # [10-220c-0800484d020000000000000000-eb] 02 is element count
         # [10-220c-0800484d020000000000000000-eb]
