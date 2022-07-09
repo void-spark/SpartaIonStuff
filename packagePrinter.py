@@ -40,6 +40,9 @@ def typeName(type):
   if type == 0x3a:
     return "Calibration B"
 
+  if type == 0x3b:
+    return "Distance to maintenance"
+
   if type == 0x5b:
     return "Paired serial 1"
 
@@ -51,6 +54,12 @@ def typeName(type):
 
   if type == 0x8e:
     return "Time"
+
+  if type == 0x99:
+    return "Trip time"
+
+  if type == 0x9a:
+    return "Max speed"
 
   return "Unknown"
 
@@ -331,8 +340,50 @@ def printPacket(source, target, type, size, message):
 
     if message[3] == 0x28:
       if type == 0x01: # Payload: 13
-        # [10-c12d-2800000000000000000000000000-a8]
-        print(f" - UPDATE DISPLAY(CU3): {message[4:-1].hex()}", end='')
+        # [10-c12d-2800000000000000000000000000-a8]        
+        print(f" - UPDATE DISPLAY(CU3): ", end='')
+
+        if message[4] == 0x00:
+          print(f"SCR:MAIN(0) ", end='')
+        if message[4] == 0x01:
+          print(f"SCR:BAT+CHRG ", end='')
+        if message[4] == 0x02:
+          print(f"SCR:BAT ", end='')
+        if message[4] == 0x03:
+          print(f"SCR:MAIN(3) ", end='')
+
+        if message[5] == 0x00:
+          print(f"ASS:OFF ", end='')
+        if message[5] == 0x01:
+          print(f"ASS:1 ", end='')
+        if message[5] == 0x02:
+          print(f"ASS:2 ", end='')
+        if message[5] == 0x03:
+          print(f"ASS:3 ", end='')
+        if message[5] == 0x04:
+          print(f"ASS:P ", end='')
+        if message[5] == 0x05:
+          print(f"ASS:R ", end='')
+        if message[5] == 0x07:
+          print(f"ASS:4 ", end='')
+
+        if (message[6] >> 3) & 0x01 == 0x01:
+          print(f"SCR:ON ", end='')
+
+        if (message[6] >> 0) & 0x01 == 0x01:
+          print(f"LIGHT ", end='')
+
+        if (message[6] >> 2) & 0x01 == 0x01:
+          print(f"RANGE_EXT ", end='')
+
+        print(f"speed:{message[7] << 8 + message[8]} ", end='')
+
+        print(f"trip1:{message[9] << 24 + message[10] << 16 + message[11] << 8 + message[12]} ", end='')
+
+        print(f"trip2:{message[13] << 24 + message[14] << 16 + message[15] << 8 + message[16]} ", end='')
+
+
+
       if type == 0x02: # Payload: 1
         # [10-22c1-2801-60]
         print(f" - UPDATE DISPLAY(CU3) - OK {message[4:-1].hex()}", end='')
@@ -372,12 +423,11 @@ def printPacket(source, target, type, size, message):
         print(f" - MYSTERY BATTERY COMMAND 01 - OK {message[4:-1].hex()}", end='')
 
     if message[3] == 0x14:
-      if type == 0x01: # Payload: 1
-        # [10-21c0-14-9f] Once or twice, a bit before turn on motor.
-        print(f" - MYSTERY BATTERY COMMAND 14 {message[4:-1].hex()}", end='')
-      if type == 0x02: # Payload: 0
-        # [10-c220-14-2d]
-        print(f" - MYSTERY BATTERY COMMAND 14 - OK {message[4:-1].hex()}", end='')
+      # This seems to be similar to [0x00] with a CU3 that's awake and talking, let the motor know a button was pressed and stuff should happen (turn on motor)
+      if type == 0x01:
+        print(f" - CU3: WAKE UP BATTERY {message[4:-1].hex()}", end='')
+      if type == 0x02:
+        print(f" - CU3: WAKE UP BATTERY - OK {message[4:-1].hex()}", end='')
 
   print()
 
